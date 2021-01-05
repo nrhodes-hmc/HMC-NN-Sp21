@@ -8,7 +8,17 @@
 </head>
 
 <body>
-  <h1>MDP</h1>
+  <h1>Optimizing</h1>
+  You are to act as the optimizer in the standard Gradient Descent training loop.
+  You'll be given:
+    <ul>
+        <li>Current weights</li>
+        <li>Loss for those weights</li>
+    </ul>
+    You are to then specify by how much each of the weights will change.
+
+  Your goal is to end up with a set of weights that mininize the loss.
+
   <div id="root"></div>
 
   <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
@@ -99,23 +109,43 @@
       }
 
       let startState = window.location.href.includes('S2') ?  'S2' : 'S1';
+      let startTheta = [0.0, 0.0]  
 
-      class MDP extends React.Component{
+      class Optimizer extends React.Component{
         constructor(props) {
           super(props);
           this.state = {
-                        state: props.initialState,
+                        theta: props.initialTheta,
                         episodeCount: 0,
-                        episodes: [],
-                        currentEpisode: [{s:props.initialState}]};
+                        episodes: []};
+                        //currentEpisode: [s:props.initialTheta]};
           this.handleActionButton = this.handleActionButton.bind(this);
           this.handleStartEpisode = this.handleStartEpisode.bind(this);
         }
 
-        getStateRewardFor(state, action) {
-          let t = transitionTable[state][action]
-          return weightedChoice(Math.random(), t.results, t.weights);
+        handleActionButton() {
         }
+
+        handleStartEpisode() {
+          this.setState((state, props) => ({
+            theta: props.initialTheta,
+            currentEpisode: [props.initialTheta]}));
+        }
+
+        render() {
+          print("render")
+          return <div id="container">
+              <div id="app">
+                  <b> MDP</b>
+                  <br/>
+                  <p>Current theta: {this.state.theta} </p>
+             </div>
+           </div>
+         }
+      }
+
+      /*
+      class MDP extends React.Component{
 
         handleAction(action) {
           this.setState((state, props)=> {
@@ -182,9 +212,10 @@
             </div>)
         }
       }
+      */
 
       ReactDOM.render(
-        <MDP maxEpisodes={5} initialState={startState}/> ,
+        <Optimizer maxEpisodes={5} initialTheta={startTheta}/> ,
         document.getElementById('root'),
       );
   </script>
