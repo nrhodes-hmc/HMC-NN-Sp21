@@ -1,0 +1,24 @@
+#container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+#mdp {
+  width: 34%;
+  background-color: LightYellow;
+}
+#stats {
+  width: 66%;
+  background-color: LightBlue;
+}
+#episodescontainer {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+#episode {
+  width: 66%;
+  background-color: LightBlue;
+}
+
+

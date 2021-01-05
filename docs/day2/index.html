@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">  
+  <link rel="stylesheet" href="app.css">
+  <title>MDP</title>
+</head>
+
+<body>
+  <h1>MDP</h1>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@16/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+
+      const e = React.createElement;
+
+      function weightedChoice(r, array, weights) {
+          let s = weights.reduce((a, e) => a + e);
+          return array.find((e, i) => (r -= weights[i]) < 0);
+      }
+
+      const transitionTable = {
+        'S1': {
+          'A1': {
+            'results': [{s:'S1', r:1}, {s:'S2', r:0}, {s:'T', r:1}],
+            'weights': [ .8,             .15,            .05],
+          },
+          'A2': {
+            'results': [{s:'S1', r:-1}, {s:'S2', r:-1},   {s:'T', r:1}],
+            'weights': [ .2,        .7,            .1],
+          },
+        },
+        'S2': {
+          'A1': {
+            'results': [{s:'S1', r:4}, {s:'S2', r:4}],
+            'weights': [ .8,        .2],
+          },
+          'A2': {
+            'results': [{s:'S1', r:2}, {s:'S2', r:2}],
+            'weights': [ .8,        .2],
+          },
+        }}
+
+
+      function totalEpisode(episode) {
+        let result = totalArr(episode.filter(a=>a.r).map(a => a.r))
+        return result
+      }
+
+      function totalArr(arr) {
+        return arr.reduce((a, b) => a + b, 0);
+      }
+
+      class Stat extends React.Component {
+        
+        render() {
+            let total = totalEpisode(this.props.episode);
+            let count=this.props.episode.length - 1;
+            return (<div id="episode">
+                  <h3> Episode {this.props.episodeNum}<br/>total reward: {total}<br/>length: {count}</h3>
+                  <table>
+                  <thead>
+                  <tr><th>R</th><th>S</th><th>A</th></tr>
+                  </thead>
+                  <tbody>
+
+                  {this.props.episode.map(
+                      (episode, index) => 
+                            <tr key={index}><td align="right">{'r' in episode ? episode.r : null}</td><td>{episode.s ? episode.s : null}</td><td>{episode.a ? episode.a : null}</td></tr>
+                      )
+                  }
+                  </tbody>
+                  </table>
+                </div>)
+        }
+      }
+
+      class Stats extends React.Component {
+        render() {
+            let totals = this.props.episodes.map(totalEpisode);
+            let total = totalArr(totals)
+            let avgPerEpisode = total / totals.length
+            return (
+                <>
+                    <h3>Average per episode: {avgPerEpisode.toFixed(2)}<br/>   Total reward: {total}</h3>
+                    <br/>
+                    <div id="episodescontainer">
+                      {this.props.episodes.map(
+                          (episode, index) => <Stat episode={episode} key={index} episodeNum={index + 1}/>) }
+                    </div>
+                </>
+                )
+        }
+      }
+
+      let startState = window.location.href.includes('S2') ?  'S2' : 'S1';
+
+      class MDP extends React.Component{
+        constructor(props) {
+          super(props);
+          this.state = {
+                        state: props.initialState,
+                        episodeCount: 0,
+                        episodes: [],
+                        currentEpisode: [{s:props.initialState}]};
+          this.handleActionButton = this.handleActionButton.bind(this);
+          this.handleStartEpisode = this.handleStartEpisode.bind(this);
+        }
+
+        getStateRewardFor(state, action) {
+          let t = transitionTable[state][action]
+          return weightedChoice(Math.random(), t.results, t.weights);
+        }
+
+        handleAction(action) {
+          this.setState((state, props)=> {
+            let stateReward = this.getStateRewardFor(this.state.state, action);
+            let newState = stateReward.s;
+            let currentEpisode = [...state.currentEpisode, stateReward];  
+            currentEpisode.slice(-2)[0].a = action
+
+            let result =  {
+                  state: newState,
+                  currentEpisode: currentEpisode,
+            }
+            if (newState == "T") {
+                return {...result, 
+                  episodeCount: state.episodeCount + 1,
+                  episodes: [...state.episodes, currentEpisode]
+                }
+            }
+            else {
+                return result
+            }
+          });
+        }
+
+        handleActionButton(e) {
+          let action = e.target.value
+          this.handleAction(action)
+        }
+
+        handleStartEpisode() {
+          this.setState((state, props) => ({
+            state: startState,
+            currentEpisode: [{s:startState}]}));
+        }
+
+        render() {
+          let done = this.state.state == 'T'
+          var doneAddon = null
+          if (done) {
+              if (this.state.episodeCount < this.props.maxEpisodes) {
+                doneAddon = <button onClick={this.handleStartEpisode}>Start another episode</button>;
+              } else {
+                doneAddon = <p id="gameOver">Game over</p>;
+              }
+          }
+          return (<div id="container">
+              <div id="mdp">
+                  <b> MDP</b>
+                  <br/>
+                  <p>Current state: {this.state.state}, last reward: {this.state.currentEpisode.slice(-1)[0]['r']} </p>
+                  {!done ?
+                    <button value="A1" onClick={this.handleActionButton} >Action A1</button> :
+                    null}
+		    &nbsp;&nbsp;
+                  {!done ?
+                    <button value="A2" onClick={this.handleActionButton}>Action A2</button> :
+                    null}
+                  {doneAddon}
+                  <p>Episodes remaining: {this.props.maxEpisodes - this.state.episodeCount}</p>
+              </div>
+              <div id="stats">
+                <Stats episodes={done ? this.state.episodes : [...this.state.episodes, this.state.currentEpisode]}/>
+              </div>
+            </div>)
+        }
+      }
+
+      ReactDOM.render(
+        <MDP maxEpisodes={5} initialState={startState}/> ,
+        document.getElementById('root'),
+      );
+  </script>
+</body>
+
+</html>
+
+
+
+
