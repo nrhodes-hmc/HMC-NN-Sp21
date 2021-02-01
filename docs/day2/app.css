@@ -1,24 +1,30 @@
+/*
 #container {
-  height: 100%;
+  top: 100px;
+  height: 80%;
   width: 100%;
   display: flex;
 }
-#mdp {
-  width: 34%;
+*/
+#opt {
+  height:300px;
+  width: 300px;
   background-color: LightYellow;
 }
 #stats {
-  width: 66%;
+  width:300px;
+  height:400px;
+  max-height: 400px;
   background-color: LightBlue;
+  overflow-y:scroll
 }
-#episodescontainer {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
+#chart {
+  position: -webkit-sticky; /* Safari */
+  position: sticky;
+  top: 0
+  width: 33%
+  background-color: DarkBlue;
 }
-#episode {
-  width: 66%;
-  background-color: LightBlue;
+#selected {
+    font-weight: bold
 }
-
-
