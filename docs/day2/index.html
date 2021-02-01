@@ -346,7 +346,9 @@
   }
 
       function init() {
-          showGradient = (new URLSearchParams(window.location.search)).get("showGradient");
+          let foo = new URLSearchParams(window.location.search)
+          console.log('init', foo);
+          let showGradient = foo.get("showGradient");
           console.log('init', showGradient);
           ReactDOM.render(
             <App />,
